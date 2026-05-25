@@ -392,6 +392,30 @@ func stackCmd() *cobra.Command {
 	}
 	startCmd.Flags().IntVar(&startEnvID, "env", 0, "Environment ID (required)")
 
+	var restartEnvID int
+	restartCmd := &cobra.Command{
+		Use:   "restart <id>",
+		Short: "Restart a stack",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if restartEnvID == 0 {
+				return fmt.Errorf("--env is required")
+			}
+			c, err := client.MustClient()
+			if err != nil {
+				return err
+			}
+			var result interface{}
+			path := fmt.Sprintf("/stacks/%s/start?endpointId=%d&forceRecreate=true", args[0], restartEnvID)
+			if err := c.Post(path, nil, &result); err != nil {
+				return err
+			}
+			output.Success("Stack " + args[0] + " restarted.")
+			return nil
+		},
+	}
+	restartCmd.Flags().IntVar(&restartEnvID, "env", 0, "Environment ID (required)")
+
 	var stopEnvID int
 	stopCmd := &cobra.Command{
 		Use:   "stop <id>",
@@ -459,6 +483,6 @@ func stackCmd() *cobra.Command {
 	cmd.AddCommand(listCmd, getCmd, getByNameCmd, fileCmd,
 		deployComposeCmd, deploySwarmCmd, deployGitCmd,
 		deployK8sCmd, deployK8sGitCmd,
-		redeployCmd, startCmd, stopCmd, deleteCmd, imagesStatusCmd)
+		redeployCmd, startCmd, restartCmd, stopCmd, deleteCmd, imagesStatusCmd)
 	return cmd
 }
