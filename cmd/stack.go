@@ -53,6 +53,23 @@ func stackStatusLabel(s int) string {
 	}
 }
 
+func mapStacks(c *client.Client, envId int) (map[string]string, error) {
+	path := "/stacks"
+	if envId > 0 {
+		path += fmt.Sprintf("?filters={\"EndpointID\":%d}", envId)
+	}
+	var stacksList []stack
+	if err := c.Get(path, &stacksList); err != nil {
+		return nil, err
+	}
+	stacks := map[string]string{}
+
+	for _, s := range stacksList {
+		stacks[s.Name] = strconv.Itoa(s.ID)
+	}
+	return stacks, nil
+}
+
 func stackCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "stack",
@@ -395,8 +412,22 @@ func stackCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
+			stackID := args[0]
+			if _, err := strconv.Atoi(args[0]); err != nil {
+				var ok bool
+				stacks, err := mapStacks(c, startEnvID)
+				if err != nil {
+					return err
+				}
+				stackID, ok = stacks[args[0]]
+				if !ok {
+					return fmt.Errorf("stack not found: %s", args[0])
+				}
+			}
+
 			var result interface{}
-			path := fmt.Sprintf("/stacks/%s/start?endpointId=%d", args[0], startEnvID)
+			path := fmt.Sprintf("/stacks/%s/start?endpointId=%d", stackID, startEnvID)
 			if err := c.Post(path, nil, &result); err != nil {
 				return err
 			}
@@ -432,8 +463,22 @@ func stackCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+
+			stackID := args[0]
+			if _, err := strconv.Atoi(args[0]); err != nil {
+				var ok bool
+				stacks, err := mapStacks(c, startEnvID)
+				if err != nil {
+					return err
+				}
+				stackID, ok = stacks[args[0]]
+				if !ok {
+					return fmt.Errorf("stack not found: %s", args[0])
+				}
+			}
+
 			var result interface{}
-			path := fmt.Sprintf("/stacks/%s/start?endpointId=%d&forceRecreate=true", args[0], restartEnvID)
+			path := fmt.Sprintf("/stacks/%s/start?endpointId=%d&forceRecreate=true", stackID, restartEnvID)
 			if err := c.Post(path, nil, &result); err != nil {
 				return err
 			}
@@ -469,7 +514,21 @@ func stackCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			path := fmt.Sprintf("/stacks/%s/stop?endpointId=%d", args[0], stopEnvID)
+
+			stackID := args[0]
+			if _, err := strconv.Atoi(args[0]); err != nil {
+				var ok bool
+				stacks, err := mapStacks(c, startEnvID)
+				if err != nil {
+					return err
+				}
+				stackID, ok = stacks[args[0]]
+				if !ok {
+					return fmt.Errorf("stack not found: %s", args[0])
+				}
+			}
+
+			path := fmt.Sprintf("/stacks/%s/stop?endpointId=%d", stackID, stopEnvID)
 			if err := c.Post(path, nil, nil); err != nil {
 				return err
 			}
