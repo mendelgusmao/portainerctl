@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/spf13/cobra"
 	"github.com/portainer/portainerctl/internal/client"
+	"github.com/portainer/portainerctl/internal/config"
 	"github.com/portainer/portainerctl/internal/output"
+	"github.com/spf13/cobra"
 )
 
 // Structs match portaineree.Endpoint and portaineree.EndpointGroup from spec 2.39.1
@@ -117,6 +118,32 @@ func envCmd() *cobra.Command {
 				return err
 			}
 			output.JSON(env)
+			return nil
+		},
+	}
+
+	useCmd := &cobra.Command{
+		Use:   "use <id>",
+		Short: "Use environment as default for subsequent commands",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := config.Load()
+			if err != nil {
+				return err
+			}
+
+			for index, ctx := range cfg.Contexts {
+				if ctx.Name == cfg.CurrentContext {
+					cfg.Contexts[index].DefaultEnvironmentID, _ = strconv.Atoi(args[0])
+					break
+				}
+			}
+
+			if err := config.Save(cfg); err != nil {
+				return err
+			}
+
+			output.Success(fmt.Sprintf("Environment %s set as default for current context.", args[0]))
 			return nil
 		},
 	}
@@ -278,7 +305,7 @@ func envCmd() *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(listCmd, getCmd, snapshotCmd, snapshotAllCmd, deleteCmd, deleteBulkCmd,
+	cmd.AddCommand(listCmd, getCmd, useCmd, snapshotCmd, snapshotAllCmd, deleteCmd, deleteBulkCmd,
 		relationsCmd, agentVersionsCmd, settingsCmd, envRegistriesCmd)
 	return cmd
 }

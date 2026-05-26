@@ -5,9 +5,10 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/spf13/cobra"
 	"github.com/portainer/portainerctl/internal/client"
+	"github.com/portainer/portainerctl/internal/config"
 	"github.com/portainer/portainerctl/internal/output"
+	"github.com/spf13/cobra"
 )
 
 // portaineree.Stack — only scalar fields used in list table.
@@ -374,9 +375,22 @@ func stackCmd() *cobra.Command {
 		Short: "Start a stopped stack",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if startEnvID == 0 {
-				return fmt.Errorf("--env is required")
+			cfg, err := config.Load()
+			if err != nil {
+				return err
 			}
+
+			ctx, err := cfg.Current()
+			if err != nil {
+				return err
+			}
+
+			if ctx.DefaultEnvironmentID == 0 && startEnvID == 0 {
+				return fmt.Errorf("--env is required")
+			} else if ctx.DefaultEnvironmentID > 0 && startEnvID == 0 {
+				startEnvID = ctx.DefaultEnvironmentID
+			}
+
 			c, err := client.MustClient()
 			if err != nil {
 				return err
@@ -398,9 +412,22 @@ func stackCmd() *cobra.Command {
 		Short: "Restart a stack",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if restartEnvID == 0 {
-				return fmt.Errorf("--env is required")
+			cfg, err := config.Load()
+			if err != nil {
+				return err
 			}
+
+			ctx, err := cfg.Current()
+			if err != nil {
+				return err
+			}
+
+			if ctx.DefaultEnvironmentID == 0 && restartEnvID == 0 {
+				return fmt.Errorf("--env is required")
+			} else if ctx.DefaultEnvironmentID > 0 && restartEnvID == 0 {
+				restartEnvID = ctx.DefaultEnvironmentID
+			}
+
 			c, err := client.MustClient()
 			if err != nil {
 				return err
@@ -422,9 +449,22 @@ func stackCmd() *cobra.Command {
 		Short: "Stop a running stack",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if stopEnvID == 0 {
-				return fmt.Errorf("--env is required")
+			cfg, err := config.Load()
+			if err != nil {
+				return err
 			}
+
+			ctx, err := cfg.Current()
+			if err != nil {
+				return err
+			}
+
+			if ctx.DefaultEnvironmentID == 0 && stopEnvID == 0 {
+				return fmt.Errorf("--env is required")
+			} else if ctx.DefaultEnvironmentID > 0 && stopEnvID == 0 {
+				stopEnvID = ctx.DefaultEnvironmentID
+			}
+
 			c, err := client.MustClient()
 			if err != nil {
 				return err

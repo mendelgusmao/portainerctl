@@ -9,10 +9,11 @@ import (
 )
 
 type Context struct {
-	Name     string `yaml:"name"`
-	URL      string `yaml:"url"`
-	Token    string `yaml:"token"`
-	Insecure bool   `yaml:"insecure"`
+	Name                 string `yaml:"name"`
+	URL                  string `yaml:"url"`
+	Token                string `yaml:"token"`
+	Insecure             bool   `yaml:"insecure"`
+	DefaultEnvironmentID int    `yaml:"defaultEnvironmentId,omitempty"`
 }
 
 type Config struct {
