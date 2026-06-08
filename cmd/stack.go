@@ -390,7 +390,7 @@ func stackCmd() *cobra.Command {
 	startCmd := &cobra.Command{
 		Use:   "start <id>",
 		Short: "Start a stopped stack",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := config.Load()
 			if err != nil {
@@ -413,25 +413,28 @@ func stackCmd() *cobra.Command {
 				return err
 			}
 
-			stackID := args[0]
-			if _, err := strconv.Atoi(args[0]); err != nil {
-				var ok bool
-				stacks, err := mapStacks(c, startEnvID)
-				if err != nil {
-					return err
-				}
-				stackID, ok = stacks[args[0]]
-				if !ok {
-					return fmt.Errorf("stack not found: %s", args[0])
-				}
-			}
-
-			var result interface{}
-			path := fmt.Sprintf("/stacks/%s/start?endpointId=%d", stackID, startEnvID)
-			if err := c.Post(path, nil, &result); err != nil {
+			stacks, err := mapStacks(c, startEnvID)
+			if err != nil {
 				return err
 			}
-			output.Success("Stack " + args[0] + " started.")
+
+			for _, arg := range args {
+				stackID := arg
+				if _, err := strconv.Atoi(stackID); err != nil {
+					var ok bool
+					stackID, ok = stacks[stackID]
+					if !ok {
+						return fmt.Errorf("stack not found: %s", stackID)
+					}
+				}
+
+				var result interface{}
+				path := fmt.Sprintf("/stacks/%s/start?endpointId=%d", stackID, startEnvID)
+				if err := c.Post(path, nil, &result); err != nil {
+					return err
+				}
+				output.Success("Stack " + arg + " started.")
+			}
 			return nil
 		},
 	}
@@ -441,7 +444,7 @@ func stackCmd() *cobra.Command {
 	restartCmd := &cobra.Command{
 		Use:   "restart <id>",
 		Short: "Restart a stack",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := config.Load()
 			if err != nil {
@@ -464,25 +467,28 @@ func stackCmd() *cobra.Command {
 				return err
 			}
 
-			stackID := args[0]
-			if _, err := strconv.Atoi(args[0]); err != nil {
-				var ok bool
-				stacks, err := mapStacks(c, startEnvID)
-				if err != nil {
-					return err
-				}
-				stackID, ok = stacks[args[0]]
-				if !ok {
-					return fmt.Errorf("stack not found: %s", args[0])
-				}
-			}
-
-			var result interface{}
-			path := fmt.Sprintf("/stacks/%s/start?endpointId=%d&forceRecreate=true", stackID, restartEnvID)
-			if err := c.Post(path, nil, &result); err != nil {
+			stacks, err := mapStacks(c, restartEnvID)
+			if err != nil {
 				return err
 			}
-			output.Success("Stack " + args[0] + " restarted.")
+
+			for _, arg := range args {
+				stackID := arg
+				if _, err := strconv.Atoi(stackID); err != nil {
+					var ok bool
+					stackID, ok = stacks[stackID]
+					if !ok {
+						return fmt.Errorf("stack not found: %s", stackID)
+					}
+				}
+
+				var result interface{}
+				path := fmt.Sprintf("/stacks/%s/start?endpointId=%d&forceRecreate=true", stackID, restartEnvID)
+				if err := c.Post(path, nil, &result); err != nil {
+					return err
+				}
+				output.Success("Stack " + arg + " restarted.")
+			}
 			return nil
 		},
 	}
@@ -492,7 +498,7 @@ func stackCmd() *cobra.Command {
 	stopCmd := &cobra.Command{
 		Use:   "stop <id>",
 		Short: "Stop a running stack",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := config.Load()
 			if err != nil {
@@ -515,24 +521,27 @@ func stackCmd() *cobra.Command {
 				return err
 			}
 
-			stackID := args[0]
-			if _, err := strconv.Atoi(args[0]); err != nil {
-				var ok bool
-				stacks, err := mapStacks(c, startEnvID)
-				if err != nil {
-					return err
-				}
-				stackID, ok = stacks[args[0]]
-				if !ok {
-					return fmt.Errorf("stack not found: %s", args[0])
-				}
-			}
-
-			path := fmt.Sprintf("/stacks/%s/stop?endpointId=%d", stackID, stopEnvID)
-			if err := c.Post(path, nil, nil); err != nil {
+			stacks, err := mapStacks(c, stopEnvID)
+			if err != nil {
 				return err
 			}
-			output.Success("Stack " + args[0] + " stopped.")
+
+			for _, arg := range args {
+				stackID := arg
+				if _, err := strconv.Atoi(stackID); err != nil {
+					var ok bool
+					stackID, ok = stacks[stackID]
+					if !ok {
+						return fmt.Errorf("stack not found: %s", stackID)
+					}
+				}
+
+				path := fmt.Sprintf("/stacks/%s/stop?endpointId=%d", stackID, stopEnvID)
+				if err := c.Post(path, nil, nil); err != nil {
+					return err
+				}
+				output.Success("Stack " + arg + " stopped.")
+			}
 			return nil
 		},
 	}
