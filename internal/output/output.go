@@ -69,6 +69,10 @@ func Success(msg string) {
 	fmt.Println(msg)
 }
 
+func Error(msg string, v ...any) {
+	fmt.Printf("! "+msg+"\n", v...)
+}
+
 // Fatal prints an error to stderr and exits.
 func Fatal(err error) {
 	fmt.Fprintf(os.Stderr, "error: %v\n", err)

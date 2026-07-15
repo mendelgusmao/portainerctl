@@ -424,14 +424,16 @@ func stackCmd() *cobra.Command {
 					var ok bool
 					stackID, ok = stacks[stackID]
 					if !ok {
-						return fmt.Errorf("stack not found: %s", stackID)
+						output.Error("stack not found: %s", stackID)
+						continue
 					}
 				}
 
 				var result interface{}
 				path := fmt.Sprintf("/stacks/%s/start?endpointId=%d", stackID, startEnvID)
 				if err := c.Post(path, nil, &result); err != nil {
-					return err
+					output.Error("starting stack %s: %v", arg, err)
+					continue
 				}
 				output.Success("Stack " + arg + " started.")
 			}
@@ -478,14 +480,16 @@ func stackCmd() *cobra.Command {
 					var ok bool
 					stackID, ok = stacks[stackID]
 					if !ok {
-						return fmt.Errorf("stack not found: %s", stackID)
+						output.Error("stack not found: %s", stackID)
+						continue
 					}
 				}
 
 				var result interface{}
 				path := fmt.Sprintf("/stacks/%s/start?endpointId=%d&forceRecreate=true", stackID, restartEnvID)
 				if err := c.Post(path, nil, &result); err != nil {
-					return err
+					output.Error("restarting stack %s: %v", arg, err)
+					continue
 				}
 				output.Success("Stack " + arg + " restarted.")
 			}
@@ -532,13 +536,15 @@ func stackCmd() *cobra.Command {
 					var ok bool
 					stackID, ok = stacks[stackID]
 					if !ok {
-						return fmt.Errorf("stack not found: %s", stackID)
+						output.Error("stack not found: %s", stackID)
+						continue
 					}
 				}
 
 				path := fmt.Sprintf("/stacks/%s/stop?endpointId=%d", stackID, stopEnvID)
 				if err := c.Post(path, nil, nil); err != nil {
-					return err
+					output.Error("stopping stack %s: %v", arg, err)
+					continue
 				}
 				output.Success("Stack " + arg + " stopped.")
 			}
